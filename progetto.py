@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import json
 
 
-# CONFIGURAZIONE GENERALE APP
+# Configurazione principale della programma
 st.set_page_config(
     page_title="Qualità dell'aria a Milano",
     layout="wide"
 )
 
-# SEZIONE INFORMATIVA SUGLI INQUINANTI
+# Sezione informativa sugli inquinanti
 def mostra_inquinanti():
     st.header("📌 Conoscere gli inquinanti atmosferici")
 
@@ -44,7 +44,7 @@ def mostra_inquinanti():
             "È irritante, soprattutto nei mesi estivi."
         )
 
-# CARICAMENTO E PULIZIA DEI DATI
+# Caricamento e pulizia dei dati
 @st.cache_data
 def prepara_dati():
     file_json_annuali = [
@@ -89,7 +89,7 @@ def prepara_dati():
 
     return df_completo
 
-# FUNZIONE PRINCIPALE
+# Funzione principale
 def avvia_app():
     st.title("🌍 Monitoraggio qualità dell’aria a Milano")
     st.markdown(
@@ -106,9 +106,7 @@ def avvia_app():
     lista_inquinanti = sorted(df["inquinante"].unique())
     inquinante = st.sidebar.selectbox("Scegli un inquinante", lista_inquinanti)
 
-    # -------------------------
-    # ANALISI TEMPORALE
-    # -------------------------
+    # Analisi temporale
     st.divider()
     st.header(f"📈 Evoluzione annuale di {inquinante}")
 
@@ -135,7 +133,7 @@ def avvia_app():
             st.write(f"- L’inquinamento è **{trend}** nel periodo analizzato.")
         st.write("- Picchi possono dipendere da eventi climatici o lockdown.")
 
-    # STAZIONI PIÙ CRITICHE
+    # Stazioni più critiche
     st.divider()
     st.header(f"🏭 Stazioni più inquinate per {inquinante}")
 
@@ -159,7 +157,7 @@ def avvia_app():
     with c_tab:
         st.table(media_stazioni.reset_index().rename(columns={"valore": "Media µg/m³"}))
 
-    # DETTAGLIO ULTIMO ANNO
+    # Dettaglio ultimo anno
     st.divider()
     st.header("📆 Analisi dettagliata ultimo anno disponibile")
 
@@ -190,7 +188,8 @@ def avvia_app():
     else:
         st.warning("Nessun dato disponibile per la selezione effettuata.")
 
-# AVVIO APP
+# Avvio app
 if __name__ == "__main__":
     avvia_app()
+
 
