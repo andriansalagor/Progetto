@@ -3,14 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import json
 
-
-# Configurazione principale della programma
+# -----------------------------
+# CONFIGURAZIONE GENERALE APP
+# -----------------------------
 st.set_page_config(
     page_title="Qualità dell'aria a Milano",
     layout="wide"
 )
 
-# Sezione informativa sugli inquinanti
+# -----------------------------
+# SEZIONE INFORMATIVA SUGLI INQUINANTI
+# -----------------------------
 def mostra_inquinanti():
     st.header("📌 Conoscere gli inquinanti atmosferici")
 
@@ -44,7 +47,9 @@ def mostra_inquinanti():
             "È irritante, soprattutto nei mesi estivi."
         )
 
-# Caricamento e pulizia dei dati
+# -----------------------------
+# CARICAMENTO E PULIZIA DEI DATI
+# -----------------------------
 @st.cache_data
 def prepara_dati():
     file_json_annuali = [
@@ -89,7 +94,9 @@ def prepara_dati():
 
     return df_completo
 
-# Funzione principale
+# -----------------------------
+# FUNZIONE PRINCIPALE
+# -----------------------------
 def avvia_app():
     st.title("🌍 Monitoraggio qualità dell’aria a Milano")
     st.markdown(
@@ -106,15 +113,22 @@ def avvia_app():
     lista_inquinanti = sorted(df["inquinante"].unique())
     inquinante = st.sidebar.selectbox("Scegli un inquinante", lista_inquinanti)
 
-    # Analisi temporale
+    # -------------------------
+    # ANALISI TEMPORALE
+    # -------------------------
     st.divider()
     st.header(f"📈 Evoluzione annuale di {inquinante}")
 
+    df_inq = df[df["inquinante"] == inquinante]
+
+    # Crea lista completa degli anni disponibili nel dataset
+    anni_completi = range(df["anno"].min(), df["anno"].max() + 1)
+
     media_annuale = (
-        df[df["inquinante"] == inquinante]
-        .groupby("anno")["valore"]
+        df_inq.groupby("anno")["valore"]
         .mean()
-    )
+        .reindex(anni_completi, fill_value=0)  # <-- anni mancanti messi a 0
+)
 
     col_plot, col_note = st.columns([2, 1])
 
@@ -133,7 +147,9 @@ def avvia_app():
             st.write(f"- L’inquinamento è **{trend}** nel periodo analizzato.")
         st.write("- Picchi possono dipendere da eventi climatici o lockdown.")
 
-    # Stazioni più critiche
+    # -------------------------
+    # STAZIONI PIÙ CRITICHE
+    # -------------------------
     st.divider()
     st.header(f"🏭 Stazioni più inquinate per {inquinante}")
 
@@ -157,7 +173,9 @@ def avvia_app():
     with c_tab:
         st.table(media_stazioni.reset_index().rename(columns={"valore": "Media µg/m³"}))
 
-    # Dettaglio ultimo anno
+    # -------------------------
+    # DETTAGLIO ULTIMO ANNO
+    # -------------------------
     st.divider()
     st.header("📆 Analisi dettagliata ultimo anno disponibile")
 
@@ -175,6 +193,24 @@ def avvia_app():
     ].sort_values("data")
 
     if not df_focus.empty:
+
+        # Crea tutte le date dell'anno
+        tutte_le_date = pd.date_range(
+            start=f"{anno_corrente}-01-01",
+            end=f"{anno_corrente}-12-31",
+            freq="D"
+        )
+
+        # Imposta la data come indice
+        df_focus = df_focus.set_index("data")
+
+        # Inserisce 0 nei giorni mancanti
+        df_focus = df_focus.reindex(tutte_le_date, fill_value=0)
+
+        # Rimette la data come colonna
+        df_focus = df_focus.reset_index().rename(columns={"index": "data"})
+
+        # Grafico
         fig3, ax3 = plt.subplots(figsize=(12, 4))
         ax3.plot(df_focus["data"], df_focus["valore"])
         ax3.fill_between(df_focus["data"], df_focus["valore"], alpha=0.2)
@@ -185,11 +221,12 @@ def avvia_app():
             "Il grafico evidenzia picchi e variazioni stagionali "
             "dell’inquinante selezionato."
         )
+
     else:
         st.warning("Nessun dato disponibile per la selezione effettuata.")
 
-# Avvio app
+# -----------------------------
+# AVVIO APP
+# -----------------------------
 if __name__ == "__main__":
     avvia_app()
-
-
